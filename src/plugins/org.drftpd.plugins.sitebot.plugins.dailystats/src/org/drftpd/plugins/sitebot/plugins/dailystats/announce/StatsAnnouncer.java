@@ -21,10 +21,12 @@ import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.Bytes;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.plugins.sitebot.plugins.dailystats.DailyStats;
 import org.drftpd.plugins.sitebot.plugins.dailystats.UserStats;
 import org.drftpd.plugins.sitebot.plugins.dailystats.event.StatsEvent;
 import org.drftpd.util.ReplacerUtils;
@@ -98,16 +100,25 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType, env, _bundle), writer);
 			int count = 1;
+			long totalFiles = 0;
+			long totalBytes = 0;
 			for (UserStats line : outputStats) {
 				env.add("num",count);
 				env.add("name",line.getName());
 				env.add("files",line.getFiles());
 				env.add("bytes",line.getBytes());
+				totalFiles += Long.parseLong(line.getFiles());
+				totalBytes += Bytes.parseBytes(line.getBytes());
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".item", env, _bundle), writer);
 				count++;
 			}
+
 			if (count == 1) {
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".none", env, _bundle), writer);
+			} else {
+				env.add("totalFiles", totalFiles);
+				env.add("totalBytes", Bytes.formatBytes(totalBytes));
+				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".total", env, _bundle), writer);
 			}
 		}
 	}
