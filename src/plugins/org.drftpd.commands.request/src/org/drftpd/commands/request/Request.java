@@ -152,8 +152,8 @@ public class Request extends CommandInterface {
 					continue;
 				}
 
-				RequestParser parser = new RequestParser(dir.getName());
-				
+				RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
+
 				env.add("request.owner", parser.getUser());
 
 				if (parser.getRequestName().equals(requestName)) {
@@ -246,11 +246,11 @@ public class Request extends CommandInterface {
 				if (!dir.getName().startsWith(_requestPrefix)) {
 					continue;
 				}
-				
-				RequestParser parser = new RequestParser(dir.getName());
+
+				RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
 				
 				env.add("num",Integer.toString(i));
-                env.add("request.user",parser.getUser());
+                env.add("request.user",dir.getUsername());
                 env.add("request.name",parser.getRequestName());
                 
                 i++;
@@ -291,7 +291,7 @@ public class Request extends CommandInterface {
 					continue;
 				}
 				
-				RequestParser parser = new RequestParser(dir.getName());
+				RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
 				
 				if (parser.getRequestName().equals(requestName)) {
 					requestNotFound = false;
@@ -336,10 +336,9 @@ public class Request extends CommandInterface {
 		private String _user;
 		private String _requestName;
 		
-		public RequestParser(String dirname) {
-			_user= dirname.substring(_requestPrefix.length());
-			_requestName = _user.substring(_user.indexOf('-') + 1);
-			_user = _user.substring(0, _user.indexOf('-'));
+		public RequestParser(String dirname, String owner) {
+			_user = owner;
+			_requestName = dirname.substring(_requestPrefix.length()).substring(owner.length()+1);
 		}
 		
 		public String getUser() {
