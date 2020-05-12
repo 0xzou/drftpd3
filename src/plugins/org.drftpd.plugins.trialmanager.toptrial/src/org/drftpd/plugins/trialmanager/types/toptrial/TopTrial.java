@@ -248,6 +248,8 @@ public class TopTrial extends TrialType {
 				}
 			} else {
 				//Failing
+				long missing = getMin() - user.getUploadedBytesForPeriod(getPeriod());
+				env.add("missing", Bytes.formatBytes(missing));
 				if (top) {
 					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "top.failed", env, requestuser));
 				} else {
