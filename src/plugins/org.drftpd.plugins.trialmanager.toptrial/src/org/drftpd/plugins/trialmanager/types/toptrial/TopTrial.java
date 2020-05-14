@@ -240,16 +240,23 @@ public class TopTrial extends TrialType {
 			if (i < 10) {
 				env.add("rank","0" + i);
 			}
+
+			long quota = (getMin() >= minPercentage) ? getMin() : minPercentage;
 			
 			if ((i < getKeep()) && (uploaded >= getMin()) && (uploaded >= minPercentage)) {
 				//Passing
 				if (top) {
+					env.add("above", Bytes.formatBytes(uploaded - quota));
+					env.add("perc_above", (((uploaded - quota) * 100 / quota ) + 100) + "%");
 					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "top.passed", env, requestuser));
 				}
 			} else {
 				//Failing
-				long missing = getMin() - user.getUploadedBytesForPeriod(getPeriod());
+				long missing = quota - user.getUploadedBytesForPeriod(getPeriod());
+				long percentquota = missing * 100 / quota;
 				env.add("missing", Bytes.formatBytes(missing));
+				env.add("perc_missing", percentquota + "%");
+				env.add("perc_complete", (100 - percentquota) + "%");
 				if (top) {
 					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "top.failed", env, requestuser));
 				} else {
