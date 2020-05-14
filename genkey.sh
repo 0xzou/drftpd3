@@ -5,3 +5,5 @@ SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 mkdir -p "$SCRIPTPATH/userdata"
 keytool -genkeypair -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "$SCRIPTPATH/userdata/drftpd.key" -storetype pkcs12 -storepass drftpd "$@"
+mkdir -p "$SCRIPTPATH/src/slave/resources/userdata"
+cp "$SCRIPTPATH/userdata/drftpd.key" "$SCRIPTPATH/src/slave/resources/userdata/"
