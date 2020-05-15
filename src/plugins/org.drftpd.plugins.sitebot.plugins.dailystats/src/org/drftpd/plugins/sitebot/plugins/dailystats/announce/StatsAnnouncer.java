@@ -105,20 +105,19 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 			String totalFiles = "";
 			String totalBytes = "";
 			for (UserStats line : outputStats) {
-				env.add("num",count);
-				env.add("name",line.getName());
-				env.add("files",line.getFiles());
-				env.add("bytes",line.getBytes());
-				topTotalFiles += Long.parseLong(line.getFiles());
-				topTotalBytes += Bytes.parseBytes(line.getBytes());
-
 				if (line.getName().equals("totalStats") ) {
 					totalFiles = line.getFiles();
 					totalBytes = line.getBytes();
+				} else {
+					env.add("num",count);
+					env.add("name",line.getName());
+					env.add("files",line.getFiles());
+					env.add("bytes",line.getBytes());
+					topTotalFiles += Long.parseLong(line.getFiles());
+					topTotalBytes += Bytes.parseBytes(line.getBytes());
+					sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".item", env, _bundle), writer);
+					count++;
 				}
-
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".item", env, _bundle), writer);
-				count++;
 			}
 
 			if (count == 1) {
