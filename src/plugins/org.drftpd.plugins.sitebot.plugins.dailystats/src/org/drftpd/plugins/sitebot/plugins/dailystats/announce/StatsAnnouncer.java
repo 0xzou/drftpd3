@@ -62,7 +62,7 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 				"dailystats.wkup", "dailystats.monthdn", "dailystats.monthup"};
 		return types;
 	}
-	
+
 	public void setResourceBundle(ResourceBundle bundle) {
 		_bundle = bundle;
 	}
@@ -100,15 +100,23 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType, env, _bundle), writer);
 			int count = 1;
-			long totalFiles = 0;
-			long totalBytes = 0;
+			long topTotalFiles = 0;
+			long topTotalBytes = 0;
+			String totalFiles = "";
+			String totalBytes = "";
 			for (UserStats line : outputStats) {
 				env.add("num",count);
 				env.add("name",line.getName());
 				env.add("files",line.getFiles());
 				env.add("bytes",line.getBytes());
-				totalFiles += Long.parseLong(line.getFiles());
-				totalBytes += Bytes.parseBytes(line.getBytes());
+				topTotalFiles += Long.parseLong(line.getFiles());
+				topTotalBytes += Bytes.parseBytes(line.getBytes());
+
+				if (line.getName().equals("totalStats") ) {
+					totalFiles = line.getFiles();
+					totalBytes = line.getBytes();
+				}
+
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".item", env, _bundle), writer);
 				count++;
 			}
@@ -116,8 +124,11 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 			if (count == 1) {
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".none", env, _bundle), writer);
 			} else {
+				env.add("topTotalFiles", topTotalFiles);
+				env.add("topTotalBytes", Bytes.formatBytes(topTotalBytes));
+				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".toptotal", env, _bundle), writer);
 				env.add("totalFiles", totalFiles);
-				env.add("totalBytes", Bytes.formatBytes(totalBytes));
+				env.add("totalBytes", totalBytes);
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".total", env, _bundle), writer);
 			}
 		}
