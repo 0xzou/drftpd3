@@ -36,9 +36,8 @@ import org.drftpd.vfs.ListUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -238,25 +237,38 @@ public class Request extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.header", env, request.getUser()));
 		int i = 1;
-		
+
 		User user = request.getSession().getUserNull(request.getUser());
-		
+		SimpleDateFormat sdf = new SimpleDateFormat("MM.dd.yyyy @ HH:mm");
+
 		try {
+
+			ArrayList<RequestsSort> ReqSort = new ArrayList<>();
+
 			for (DirectoryHandle dir : getRequestDirectory(request).getDirectories(user)) {
 				if (!dir.getName().startsWith(_requestPrefix)) {
 					continue;
 				}
 
 				RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
-				
-				env.add("num",Integer.toString(i));
-                env.add("request.user",dir.getUsername());
-                env.add("request.name",parser.getRequestName());
-                
-                i++;
-                
-                response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.list", env, request.getUser()));
+				ReqSort.add(new RequestsSort(parser.getRequestName(), dir.getUsername(), dir.getInode().getCreationTime()));
 			}
+
+			Collections.sort(ReqSort);
+			for(RequestsSort rs:ReqSort){
+
+				Date requestDate = new Date(rs.getRequestTime());
+
+				env.add("num",Integer.toString(i));
+				env.add("request.user",rs.getRequestUser());
+				env.add("request.name",rs.getRequestName());
+				env.add("request.date",sdf.format(requestDate));
+				i++;
+
+				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.list", env, request.getUser()));
+			}
+
+
 		} catch (FileNotFoundException e) {
 			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"request.error", env, request.getUser()));
 		}
@@ -347,6 +359,39 @@ public class Request extends CommandInterface {
 		
 		public String getRequestName() {
 			return _requestName;
+		}
+	}
+
+	private class RequestsSort implements Comparable<RequestsSort> {
+		private String _requestName;
+		private String _requestUser;
+		private Long _requestTime;
+
+		RequestsSort(String requestName, String requestUser, Long requestTime){
+			_requestName = requestName;
+			_requestUser = requestUser;
+			_requestTime = requestTime;
+		}
+
+		public String getRequestUser() {
+			return _requestUser;
+		}
+
+		public String getRequestName() {
+			return _requestName;
+		}
+
+		public Long getRequestTime()  {
+			return _requestTime;
+		}
+
+		public int compareTo(RequestsSort rs){
+			if(_requestTime==rs._requestTime)
+				return 0;
+			else if(_requestTime>rs._requestTime)
+				return 1;
+			else
+				return -1;
 		}
 	}
 
