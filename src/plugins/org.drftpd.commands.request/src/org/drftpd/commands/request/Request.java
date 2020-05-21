@@ -56,6 +56,7 @@ public class Request extends CommandInterface {
 	
 	private String _reqFilledPrefix;
 	private String _requestPrefix;
+	private String _requestDateFormat;
 
 	private ArrayList<Pattern> _requestDenyRegex;
 
@@ -86,6 +87,7 @@ public class Request extends CommandInterface {
 		
 		_reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");
 		_requestPrefix = props.getProperty("request.prefix", "REQUEST-by.");
+		_requestDateFormat = props.getProperty("request.dateformat", "MM-dd-yyyy @ HH:mm");
 
 		_requestDenyRegex.clear();
 		int i = 1;
@@ -239,7 +241,7 @@ public class Request extends CommandInterface {
 		int i = 1;
 
 		User user = request.getSession().getUserNull(request.getUser());
-		SimpleDateFormat sdf = new SimpleDateFormat("MM.dd.yyyy @ HH:mm");
+		SimpleDateFormat sdf = new SimpleDateFormat(_requestDateFormat);
 
 		try {
 
